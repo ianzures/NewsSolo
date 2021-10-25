@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     EditText tvSearch;
     RecyclerView rvArticles;
+    SwipeRefreshLayout swipeRefreshLayout;
     List<Article> articles;
     ArticleAdapter articleAdapter;
     AsyncHttpClient client;
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         tvSearch = (EditText) findViewById(R.id.tvSearch);
         rvArticles = findViewById(R.id.rvArticles);
-
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
         articles = new ArrayList<>();
         articleAdapter = new ArticleAdapter(this, articles);
 
@@ -82,8 +84,29 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        updateOperation();
+                    }
+                }
+        );
     }
 
+    private void updateOperation(){
+        jsonParse();
+        swipeRefreshLayout.setRefreshing(false);
+    }
     private void jsonParse(){
         String tickers = tvSearch.getText().toString();;
         String url = String.format("https://stocknewsapi.com/api/v1?tickers=%s,&items=%d&token=i0rpdgcnbrcgaimxbclxhztmuu6sk8jm79zcludj&fbclid=IwAR0pguARasu-pDs_Jcy4Wc4fCL_JIXCjRc_JYwsSN57xOSCnhleL3I2LDHA",tickers,numItems);
